@@ -229,32 +229,31 @@ async function generateBriefing(hydratedClusters, windowHours, onDelta) {
 ${tweets}`;
   }).join('\n\n---\n\n');
 
-  const prompt = `You are a sharp media analyst writing a briefing for a reader who wants to stay on top of what Twitter (especially crypto Twitter) is talking about right now.
+  const prompt = `You are a sharp project-manager-grade analyst writing a BUILD-OPPORTUNITY briefing for engineers and PMs who scan trending tweets to spot what to ship next.
 
-Below are the hottest topic clusters from the last ${windowHours} hours. Each cluster comes from j7tracker's per-tweet AI label; I have added per-cluster analytics (author counts, timeline) and a chronological sample of the actual tweet text.
+Below are the hottest topic clusters from the last ${windowHours} hours. Each cluster comes from j7tracker's per-tweet AI label; per-cluster analytics (author counts, timeline) and a chronological sample of actual tweet text are included.
 
 DATA:
 
 ${sections}
 
-Write a markdown briefing with this structure:
+YOUR JOB: extract CONCRETE product/tool opportunities from this data. Most trending topics are noise — celebrity drama, sports recaps, pure breaking news with no actionable hook, single-account hype campaigns, etc. They do NOT belong in this briefing. A topic earns a section ONLY if someone could realistically ship a tool, dashboard, agent, SaaS, content product, or other shippable thing around the trend. Skip aggressively — a short, dense briefing is better than a long, padded one.
 
-1. Open with a single sentence in italics summarizing the overall vibe of the last ${windowHours} hours — what's the dominant thread, if any. No heading, just the sentence.
+Write a markdown briefing with this exact structure:
 
-2. One \`##\` section per topic worth covering. Skip topics that are clearly spam, scam-bait, or noise (e.g. random ticker mentions, low-quality engagement farming). MERGE topics that are obviously the same story under different labels — write one section, not two.
+1. Open with a single italics sentence naming the biggest build opportunity in this ${windowHours}h window. No heading, just the sentence. If nothing in the window is actionable, say so explicitly: "_No actionable build opportunities in this window._" and STOP — do not invent sections.
 
-3. For each topic:
-   - The \`##\` line is a short, punchy headline written by YOU. NOT the raw label. A real news-style headline.
-   - 3-5 sentences explaining what's happening. Use direct quotes from the sample tweets when they're vivid. Cite authors with @handle.
-   - IMPORTANT: explicitly call out patterns when you see them:
-     - When the same author comes back to a topic ("@toly first mentioned this 4h ago and revisited it 30min ago")
-     - When a big account is amplified by smaller accounts ("started with @sama, picked up by 6 other accounts within the hour")
-     - When the topic clusters around a tight time window vs. spans hours (breaking-news rhythm vs. slow-burn discussion)
-   - End the section with a single italic line "— N tweets · M authors" using the cluster's numbers.
+2. One \`##\` section per buildable topic. The \`##\` is a punchy headline YOU write, not the raw label. SKIP topics with no clear product angle even if they're trending hard. MERGE related sub-topics under one heading. Order sections by buildability × urgency, biggest opportunity first.
 
-4. End the briefing with a \`## Watch\` section: 2-4 short bullets on what to track next (specific accounts, specific developments, expected follow-ups).
+3. For each topic, EXACTLY four parts in this order:
+   - **Trend.** 1-2 sentences on what's being said and by whom. Cite with @handle. If one author dominates the cluster (3+ tweets), call it out — that's either organic conviction or single-person hype, and the reader needs to know which.
+   - **Domain.** A single tag: \`tech\` / \`crypto\` / \`trading\` / \`ai\` / \`culture\` / \`politics\` / \`other\`.
+   - **Build angles.** A bulleted list of 2-4 CONCRETE product ideas. Specific beats generic — "A leaderboard scraping X" beats "a tool for X". Each bullet one short sentence. If you can only generate vague ideas, the topic probably isn't actionable — go back and skip it.
+   - **Speed call.** One sentence: \`ship this weekend\` / \`2-week build\` / \`multi-month bet\`, plus a one-clause note on who's already in the space or the gap (e.g., "no incumbent yet" / "X already owns the obvious version" / "saturated, only an angle wins").
 
-Tone: specific, no fluff, no hedging, no emoji, no marketing voice. Write like someone who reads timelines for a living and is briefing one smart person.`;
+4. End with a \`## Watch\` section: 2-4 bullets of things to monitor in the next 12-24h that could open ship-worthy windows. Each bullet one sentence, specific (named event, account, expected announcement).
+
+Tone: terse, opinionated, no hedging, no emoji, no marketing voice. Write like a senior PM with skin in the game — confident calls, not "could potentially perhaps."`;
 
   const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
     method: 'POST',
@@ -266,7 +265,7 @@ Tone: specific, no fluff, no hedging, no emoji, no marketing voice. Write like s
     body: JSON.stringify({
       model: CONFIG.nvidiaModel,
       messages: [
-        { role: 'system', content: 'You write tight, well-organized markdown briefings. No emoji. No fluff. Cite sources with @handle.' },
+        { role: 'system', content: 'You are a PM-grade analyst who extracts buildable product opportunities from trending tweet data. You skip noise aggressively. Confident, terse, no hedging, no emoji.' },
         { role: 'user', content: prompt },
       ],
       max_tokens: 4000,
