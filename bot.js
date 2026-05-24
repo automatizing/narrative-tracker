@@ -570,7 +570,11 @@ function renderShell(opts) {
     .replace(/\{\{CONTENT\}\}/g, sub(contentHTML));
 }
 
-const BRIEFING_BUTTON = `<button class="btn-generate" onclick="generateNow()">generate briefing now</button>`;
+// Briefings now fire automatically on a UTC clock-aligned schedule (see
+// scheduleNextBriefing). The manual-trigger button is gone from the UI to
+// avoid suggesting human action is required. POST /api/brief still exists
+// for testing via curl.
+const BRIEFING_BUTTON = '';
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -641,7 +645,6 @@ function renderLivePage() {
       <div id="live-idle" class="live-idle" style="display:none">
         <div class="live-idle-title">No briefing being written</div>
         <div class="live-idle-sub" id="live-idle-sub">—</div>
-        <button class="btn-generate" id="live-generate">generate one now</button>
       </div>
       <div id="live-content" class="live-content"></div>
     </article>
@@ -654,7 +657,6 @@ function renderLivePage() {
         const contentEl = document.getElementById('live-content');
         const metaStatusEl = document.getElementById('live-meta-status');
         const metaCharsEl = document.getElementById('live-meta-chars');
-        const generateBtn = document.getElementById('live-generate');
 
         let markdown = '';
         let renderPending = false;
@@ -690,25 +692,6 @@ function renderLivePage() {
           idleEl.style.display = 'none';
           contentEl.style.display = '';
         }
-
-        generateBtn.onclick = async () => {
-          generateBtn.disabled = true;
-          generateBtn.textContent = 'starting…';
-          try {
-            const r = await fetch('/api/brief', { method: 'POST' });
-            if (r.status === 409) {
-              metaStatusEl.textContent = 'already running';
-            } else if (!r.ok && r.status !== 202) {
-              const data = await r.json().catch(() => ({}));
-              alert(data.error || ('briefing failed: ' + r.status));
-            }
-          } catch (e) {
-            alert(e.message);
-          } finally {
-            generateBtn.disabled = false;
-            generateBtn.textContent = 'generate one now';
-          }
-        };
 
         const es = new EventSource('/api/brief/stream');
         es.onopen = () => { /* state event will arrive */ };
@@ -1056,10 +1039,28 @@ async function main() {
 
   startCollector();
   startServer();
+  scheduleNextBriefing();
+}
 
-  setInterval(() => {
-    runBriefing().catch(e => console.error('[briefing] error:', e.message));
-  }, CONFIG.briefingIntervalHours * 3600 * 1000);
+// Schedule the next briefing aligned to UTC clock boundaries, so briefings
+// always fire at the same wall-clock times regardless of when the service
+// started or was redeployed (e.g. with a 6h interval: 00:00, 06:00, 12:00,
+// 18:00 UTC every day).
+function scheduleNextBriefing() {
+  const intervalMs = CONFIG.briefingIntervalHours * 3600 * 1000;
+  const now = Date.now();
+  const nextBoundary = Math.ceil((now + 1) / intervalMs) * intervalMs;
+  const delayMs = nextBoundary - now;
+  state.nextBriefingAt = nextBoundary;
+  console.log(`[briefing] next run at ${new Date(nextBoundary).toISOString()} (in ${Math.round(delayMs / 60000)} min)`);
+  setTimeout(async () => {
+    try {
+      await runBriefing();
+    } catch (e) {
+      console.error('[briefing] error:', e.message);
+    }
+    scheduleNextBriefing();
+  }, delayMs);
 }
 
 if (require.main === module) {

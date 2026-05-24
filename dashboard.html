@@ -613,15 +613,6 @@
   </div>
 
   <script>
-    async function generateNow() {
-      // Kick off the briefing (fire-and-forget) and navigate to /live
-      // where the user can watch it stream in real time.
-      const btn = document.querySelector('.btn-generate');
-      if (btn) { btn.disabled = true; btn.textContent = 'starting…'; }
-      try { await fetch('/api/brief', { method: 'POST' }); } catch {}
-      location.href = '/live';
-    }
-
     // Refresh status every 30s
     setInterval(async () => {
       try {
