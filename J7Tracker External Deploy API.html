@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<!-- saved from url=(0034)https://j7tracker.io/external/docs -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J7Tracker External Deploy API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #36393f;
+            color: #ffffff;
+            line-height: 1.5;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .swagger-ui {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
+        .info {
+            margin: 10px 0;
+            padding: 12px;
+            background: #2f3136;
+            border-radius: 8px;
+            border: 1px solid #40444b;
+        }
+        
+        .info h1 {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        
+        .info .version {
+            background: #5865f2;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            margin-left: 6px;
+        }
+        
+        .info .description {
+            margin: 8px 0;
+            font-size: 13px;
+            color: #ffffff;
+        }
+        
+        .servers {
+            margin: 10px 0;
+            padding: 8px;
+            background: #2f3136;
+            border-radius: 6px;
+            border-left: 3px solid #5865f2;
+            border: 1px solid #40444b;
+        }
+        
+        .servers h3 {
+            margin-bottom: 5px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .server-item {
+            margin: 3px 0;
+            padding: 4px 8px;
+            background: #40444b;
+            border-radius: 4px;
+            border: 1px solid #4f545c;
+        }
+        
+        .server-url {
+            font-family: monospace;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .server-desc {
+            color: #ffffff;
+            font-size: 12px;
+        }
+        
+        
+        .operations {
+            margin: 10px 0;
+        }
+        
+        .operation {
+            margin: 5px 0;
+            border: 1px solid #40444b;
+            border-radius: 8px;
+            background: #2f3136;
+            overflow: hidden;
+        }
+        
+        .operation-header {
+            padding: 8px 12px;
+            background: #40444b;
+            border-bottom: 1px solid #4f545c;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        
+        .operation-header:hover {
+            background: #4f545c;
+        }
+        
+        .method-badge {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-right: 15px;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .method-get {
+            background: #5865f2;
+            color: white;
+        }
+        
+        .method-post {
+            background: #57f287;
+            color: #000000;
+        }
+        
+        .method-wss {
+            background: #5865f2;
+            color: white;
+        }
+        
+        .method-info {
+            background: #faa61a;
+            color: #000000;
+        }
+        
+        .operation-path {
+            font-family: monospace;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-right: 15px;
+        }
+        
+        .operation-summary {
+            color: #ffffff;
+            flex: 1;
+        }
+        
+        .operation-content {
+            padding: 12px;
+            display: none;
+            background: #2f3136;
+        }
+        
+        .operation-content.active {
+            display: block;
+        }
+        
+        .section {
+            margin: 10px 0;
+        }
+        
+        .section h4 {
+            color: #ffffff;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .parameters-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            background: #40444b;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .parameters-table th,
+        .parameters-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #4f545c;
+            color: #ffffff;
+        }
+        
+        .parameters-table th {
+            background: #4f545c;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        .param-name {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-weight: 600;
+            color: #00d4aa;
+        }
+        
+        .param-required {
+            color: #ed4245;
+            font-weight: 600;
+        }
+        
+        .param-optional {
+            color: #ffffff;
+        }
+        
+        .param-type {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #faa61a;
+            background: #40444b;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .code-block {
+            background: #2f3136;
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            border: 1px solid #40444b;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .response-section {
+            margin: 15px 0;
+        }
+        
+        .response-code {
+            background: #49cc90;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .response-desc {
+            color: #ffffff;
+            display: inline-block;
+        }
+        
+        .try-it-out {
+            background: #4990e2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .try-it-out:hover {
+            background: #4752c4;
+        }
+        
+        .websocket-info {
+            background: #40444b;
+            border: 1px solid #5865f2;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .websocket-info h4 {
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        
+        .security-warning {
+            background: #40444b;
+            border: 1px solid #faa61a;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .security-warning h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .security-warning ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+        
+        .expand-icon {
+            margin-left: auto;
+            transition: transform 0.2s;
+        }
+        
+        .expand-icon.rotated {
+            transform: rotate(180deg);
+        }
+        
+        .guide-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .guide-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px;
+            background: #40444b;
+            border-radius: 8px;
+            border: 1px solid #4f545c;
+        }
+        
+        .step-number {
+            background: #4990e2;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-content h4 {
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .step-content p {
+            color: #6c757d;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .step-content a {
+            color: #4990e2;
+            text-decoration: none;
+        }
+        
+        .step-content a:hover {
+            text-decoration: underline;
+            color: #00d4aa;
+        }
+        
+        .guide-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="swagger-ui">
+        <div class="info">
+            <h1>J7Tracker External Deploy API <span class="version">v1.0.0</span></h1>
+            <div class="description">Token deployment API for external integrations</div>
+            
+            <div class="servers">
+                <h3>Servers</h3>
+                <div class="server-item">
+                    <div class="server-url">wss://j7tracker.io/external/ws</div>
+                    <div class="server-desc">Production WebSocket server</div>
+                </div>
+                <div class="server-item">
+                    <div class="server-url">https://j7tracker.io/external</div>
+                    <div class="server-desc">Production HTTPS server</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="operations">
+            <div class="operation">
+                <div class="operation-header" onclick="toggleOperation(&#39;api-key-guide&#39;)">
+                    <span class="method-badge method-info">INFO</span>
+                    <span class="operation-path">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle;">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"></path>
+                        </svg>
+                    </span>
+                    <span class="operation-summary">How to get an API key</span>
+                    <span class="expand-icon" id="api-key-guide-icon">▼</span>
+                </div>
+                <div class="operation-content" id="api-key-guide-content">
+                    <div class="guide-steps">
+                        <div class="guide-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Log in to J7Tracker</h4>
+                                <p>Visit <a href="https://j7tracker.io/" target="_blank">https://j7tracker.io</a> and log in to your account.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="guide-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Go to Deploy Settings</h4>
+                                <p>Navigate to the deploy settings section in your dashboard.</p>
+                                <img src="./J7Tracker External Deploy API_files/deploy-settings.png" alt="Deploy Settings" class="guide-image">
+                            </div>
+                        </div>
+                        
+                        <div class="guide-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Import your Private Key</h4>
+                                <p>Import your Solana or BNB private key into the wallet manager.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="guide-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Get Encrypted API Key</h4>
+                                <p>Click the <button style="padding: 4px 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgb(55, 65, 81); border-radius: 4px; color: rgb(136, 136, 136); font-size: 11px; cursor: default;">+</button> icon on the wallet to get that specific wallet's API key.</p>
+                                <img src="./J7Tracker External Deploy API_files/get-key.png" alt="Get API Key" class="guide-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="operation">
+                <div class="operation-header" onclick="toggleOperation(&#39;http-deploy&#39;)">
+                    <span class="method-badge method-post">POST</span>
+                    <span class="operation-path">/deploy</span>
+                    <span class="operation-summary">Deploy Token via HTTPS</span>
+                    <span class="expand-icon" id="http-deploy-icon">▼</span>
+                </div>
+                <div class="operation-content" id="http-deploy-content">
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Deploy tokens by sending a JSON POST request. Same functionality as WebSocket but via REST API.</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Request Body Schema</h4>
+                        <table class="parameters-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="param-name param-required">api_key</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-required">✓</span></td>
+                                    <td>Your wallet API key</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-required">type</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-required">✓</span></td>
+                                    <td>Platform: pump, bonk, bags, bnb, nadfun, usd1, clanker</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">session_id</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>JWT session token — links deploy to your J7Tracker account</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">name</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Token name (max 32 chars)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">ticker</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Token symbol/ticker</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">twitter</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Twitter/X URL</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">website</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Website URL</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">buy_amount</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Amount to buy (default: 5)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">multi_deploy</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">1</span></td>
+                                    <td>Number of tokens to create (1-5, default: 1)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">image_type</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Image generation: ascii, sol_ascii, letter</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">image_data</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Custom image URL or data</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">ref</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Ref username for fee splitting</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">gwei</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">5</span></td>
+                                    <td>BNB gas price in Gwei (for type: bnb only, default: 5)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">bnb_currency</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">bnb</span></td>
+                                    <td>Base currency for Four.Meme BNB deploys: "bnb" or "usd1"</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">mayhem_mode</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Pump.fun only: Enable Token2022 Mayhem Mode</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">cashback_mode</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Pump.fun only: Enable Cashback mode (0% creator fees)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">agent_buyback</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Pump.fun only: Enable Creator Mode — auto buyback using creator fees (flywheel)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">auto_sell</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Auto-sell after creation (pump, bonk, usd1, bags)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">pump_fee_shareholders</span></td>
+                                    <td><span class="param-type">array</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Pump.fun only: Fee sharing — wallet, GitHub, or Twitter (must total 10000 bps)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">bonkers_mode</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Bonk/USD1 only: Use letsbonk.fun platform config</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">sell_panel_enabled</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Open sell panel in browser on success (requires session_id)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">private_desc</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>If true, omits the default description from token metadata</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">vanity_mint_privkey</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Base58 private key for a custom mint address (vanity address). If provided, the token will be created with this keypair as the mint instead of a random or vanity-pool one.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">priority_fee_sol</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Priority fee in SOL added to the transaction for faster processing</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">tip</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Jito tip in SOL — bribes the block builder for guaranteed inclusion</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Example Request (BNB with USD1)</h4>
+                        <div class="code-block">POST /deploy
+Content-Type: application/json
+
+{
+  "api_key": "your_encrypted_api_key_here",
+  "type": "bnb",
+  "name": "My Token",
+  "ticker": "MTK",
+  "twitter": "https://twitter.com/mytoken",
+  "website": "https://mytoken.com",
+  "buy_amount": 0.1,
+  "gwei": 5,
+  "bnb_currency": "usd1"
+}</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Responses</h4>
+                        <div class="response-section">
+                            <span class="response-code">200</span>
+                            <span class="response-desc">Deploy Success</span>
+                            <div class="code-block">{
+  "type": "token_create_success",
+  "success": true,
+  "message": "Token created successfully",
+  "name": "My Token",
+  "ticker": "MTK",
+  "mode": "pump",
+  "address": "pool_address_here",
+  "mint_address": "token_mint_address_here",
+  "signature": "transaction_signature_here",
+  "request_id": 1
+}</div>
+                        </div>
+                        <div class="response-section">
+                            <span class="response-code" style="background: #ed4245;">400</span>
+                            <span class="response-desc">Deploy Error</span>
+                            <div class="code-block">{
+  "type": "token_create_error",
+  "success": false,
+  "error": "Error description here",
+  "request_id": 1
+}</div>
+                        </div>
+                        <div class="response-section">
+                            <span class="response-code" style="background: #ed4245;">400</span>
+                            <span class="response-desc">Validation Error</span>
+                            <div class="code-block">{
+  "success": false,
+  "error": "api_key is required and must be a non-empty string"
+}</div>
+                        </div>
+                        <div class="response-section">
+                            <span class="response-code" style="background: #ed4245;">503</span>
+                            <span class="response-desc">Service Unavailable</span>
+                            <div class="code-block">{
+  "success": false,
+  "error": "Deploy server not connected. Please try again later."
+}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="operation">
+                <div class="operation-header" onclick="toggleOperation(&#39;websocket-deploy&#39;)">
+                    <span class="method-badge method-wss">WSS</span>
+                    <span class="operation-path">/ws</span>
+                    <span class="operation-summary">Deploy Token via WebSocket</span>
+                    <span class="expand-icon" id="websocket-deploy-icon">▼</span>
+                </div>
+                <div class="operation-content" id="websocket-deploy-content">
+                    <div class="websocket-info">
+                        <h4>WebSocket Connection</h4>
+                        <p>Connect to the WebSocket endpoint and send JSON messages to deploy tokens.</p>
+                        <div class="code-block">const ws = new WebSocket('wss://j7tracker.io/external/ws');</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Request Schema</h4>
+                        <table class="parameters-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="param-name param-required">api_key</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-required">✓</span></td>
+                                    <td>Your wallet API key</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-required">type</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-required">✓</span></td>
+                                    <td>Platform: pump, bonk, bags, bnb, nadfun, usd1, clanker</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">session_id</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>JWT session token — links deploy to your J7Tracker account</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">name</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Token name (max 32 chars)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">ticker</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Token symbol/ticker</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">twitter</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Twitter/X URL</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">website</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Website URL</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">buy_amount</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Amount to buy (default: 5)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">multi_deploy</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">1</span></td>
+                                    <td>Number of tokens to create (1-5, default: 1)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">image_type</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Image generation: ascii, sol_ascii, letter</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">image_data</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Custom image URL or data</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">ref</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Ref username for fee splitting</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">gwei</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">5</span></td>
+                                    <td>BNB gas price in Gwei (for type: bnb only, default: 5)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">bnb_currency</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">bnb</span></td>
+                                    <td>Base currency for Four.Meme BNB deploys: "bnb" or "usd1"</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">mayhem_mode</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Pump.fun only: Enable Token2022 Mayhem Mode</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">cashback_mode</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Pump.fun only: Enable Cashback mode (0% creator fees)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">agent_buyback</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Pump.fun only: Enable Creator Mode — auto buyback using creator fees (flywheel)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">auto_sell</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Auto-sell after creation (pump, bonk, usd1, bags)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">pump_fee_shareholders</span></td>
+                                    <td><span class="param-type">array</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Pump.fun only: Fee sharing — wallet, GitHub, or Twitter (must total 10000 bps)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">bonkers_mode</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Bonk/USD1 only: Use letsbonk.fun platform config</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">sell_panel_enabled</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Open sell panel in browser on success (requires session_id)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">private_desc</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>If true, omits the default description from token metadata</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">vanity_mint_privkey</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Base58 private key for a custom mint address (vanity address). If provided, the token will be created with this keypair as the mint instead of a random or vanity-pool one.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">priority_fee_sol</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Priority fee in SOL added to the transaction for faster processing</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">tip</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Jito tip in SOL — bribes the block builder for guaranteed inclusion</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Example Request</h4>
+                        <div class="code-block">{
+  "api_key": "your_encrypted_api_key_here",
+  "type": "bnb",
+  "name": "My Token",
+  "ticker": "MTK",
+  "twitter": "https://twitter.com/mytoken",
+  "website": "https://mytoken.com",
+  "buy_amount": 0.1,
+  "gwei": 5,
+  "bnb_currency": "usd1"
+}</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Responses</h4>
+                        <div class="response-section">
+                            <span class="response-code">200</span>
+                            <span class="response-desc">Deploy Success</span>
+                            <div class="code-block">{
+  "type": "token_create_success",
+  "success": true,
+  "message": "Token created successfully",
+  "name": "My Token",
+  "ticker": "MTK",
+  "mode": "bnb",
+  "address": "pool_address_here",
+  "mint_address": "token_mint_address_here",
+  "signature": "transaction_signature_here",
+  "request_id": 1
+}</div>
+                        </div>
+                        <div class="response-section">
+                            <span class="response-code" style="background: #ed4245;">400</span>
+                            <span class="response-desc">Deploy Error</span>
+                            <div class="code-block">{
+  "type": "token_create_error",
+  "success": false,
+  "error": "Error description here",
+  "request_id": 1
+}</div>
+                        </div>
+                        <div class="response-section">
+                            <span class="response-code" style="background: #ed4245;">400</span>
+                            <span class="response-desc">Validation Error</span>
+                            <div class="code-block">{
+  "success": false,
+  "error": "api_key is required"
+}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="operation">
+                <div class="operation-header" onclick="toggleOperation(&#39;bundle-info&#39;)">
+                    <span class="method-badge method-info">INFO</span>
+                    <span class="operation-path">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    </span>
+                    <span class="operation-summary">Bundle Mode Parameters</span>
+                    <span class="expand-icon" id="bundle-info-icon">▼</span>
+                </div>
+                <div class="operation-content" id="bundle-info-content">
+                    <div class="section">
+                        <h4>Bundle Mode</h4>
+                        <p>Bundle mode allows multiple wallets to buy in the same transaction block. This ensures all buys happen atomically together with the token creation.</p>
+                        <p style="color: #b9bbbe; margin-top: 10px;"><strong>Supported platforms:</strong> Pump.fun, Bonk, USD1, Bags</p>
+                        
+                        <table class="parameters-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Default</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="param-name param-optional">bundle</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Enable bundle mode (multiple wallet buys in same block)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">bundle_wallets</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Comma-separated wallet entries (see format below)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">sniper_wallets</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Comma-separated sniper wallet entries with delay support (see format below). Fires buys after the create tx lands. Works on: Pump.fun, Bonk, USD1, Bags</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Bundle Wallets Format</h4>
+                        <p>The <code>bundle_wallets</code> string contains comma-separated entries, each with format:</p>
+                        <div class="code-block" style="margin-top: 10px;">encrypted_api_key:buy_amount_in_sol</div>
+                        <ul style="color: #ccc; margin: 10px 0 10px 20px;">
+                            <li><code>encrypted_api_key</code> - The encrypted private key of the bundle wallet</li>
+                            <li><code>buy_amount_in_sol</code> - Amount of SOL this wallet will use to buy</li>
+                        </ul>
+                        <p style="color: #888; font-size: 13px;">Example: 3 wallets buying 0.5, 1.0, and 0.25 SOL each:</p>
+                        <div class="code-block" style="margin-top: 10px;">"bundle_wallets": "encrypted_key_1:0.5,encrypted_key_2:1.0,encrypted_key_3:0.25"</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Example Bundle Request</h4>
+                        <div class="code-block">{
+  "api_key": "your_encrypted_creator_key",
+  "type": "pump",
+  "name": "Bundle Token",
+  "ticker": "BUNDLE",
+  "buy_amount": 1,
+  "bundle": true,
+  "bundle_wallets": "wallet1_key:0.5,wallet2_key:0.3,wallet3_key:0.2"
+}</div>
+                        <p style="color: #888; font-size: 13px; margin-top: 10px;">This creates a token with 1 SOL creator buy, plus 3 additional wallet buys of 0.5, 0.3, and 0.2 SOL - all in the same block.</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Sniper Wallets Format</h4>
+                        <p>The <code>sniper_wallets</code> string contains comma-separated entries, each with format:</p>
+                        <div class="code-block" style="margin-top: 10px;">encrypted_api_key:buy_amount_in_sol:delay_ms</div>
+                        <ul style="color: #ccc; margin: 10px 0 10px 20px;">
+                            <li><code>encrypted_api_key</code> - The encrypted private key of the sniper wallet</li>
+                            <li><code>buy_amount_in_sol</code> - Amount of SOL this wallet will use to buy</li>
+                            <li><code>delay_ms</code> - Delay in milliseconds before this wallet fires its buy (0 = immediate, max 60000)</li>
+                        </ul>
+                        <p style="color: #888; font-size: 13px;">Example: 3 sniper wallets — first buys immediately, second after 500ms, third after 2 seconds:</p>
+                        <div class="code-block" style="margin-top: 10px;">"sniper_wallets": "encrypted_key_1:0.5:0,encrypted_key_2:1.0:500,encrypted_key_3:0.25:2000"</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Example Sniper Wallets Request</h4>
+                        <div class="code-block">{
+  "api_key": "your_encrypted_creator_key",
+  "type": "pump",
+  "name": "Sniped Token",
+  "ticker": "SNIPE",
+  "buy_amount": 1,
+  "sniper_wallets": "wallet1_key:0.5:0,wallet2_key:0.3:500,wallet3_key:0.2:2000"
+}</div>
+                        <p style="color: #888; font-size: 13px; margin-top: 10px;">Creates a token with 1 SOL creator buy. After the create tx lands, 3 sniper wallets fire buys — wallet 1 immediately, wallet 2 after 500ms, wallet 3 after 2 seconds.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="operation">
+                <div class="operation-header" onclick="toggleOperation(&#39;pump-info&#39;)">
+                    <span class="method-badge method-info">INFO</span>
+                    <span class="operation-path">
+                        <img src="./J7Tracker External Deploy API_files/pump-logo.png" width="20" height="20" style="vertical-align: middle; border-radius: 4px;">
+                    </span>
+                    <span class="operation-summary">Pump.fun Mode Parameters</span>
+                    <span class="expand-icon" id="pump-info-icon">▼</span>
+                </div>
+                <div class="operation-content" id="pump-info-content">
+                    <div class="section">
+                        <h4>Additional Parameters for Pump.fun</h4>
+                        <p>When using <code>type: "pump"</code>, you can include these optional parameters:</p>
+                        
+                        <table class="parameters-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Default</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="param-name param-optional">mayhem_mode</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Create Token2022 token with Mayhem Mode enabled</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">cashback_mode</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Enable Cashback mode (0% creator fees)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">pump_fee_shareholders</span></td>
+                                    <td><span class="param-type">array</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Array of fee shareholders — wallet, GitHub, or Twitter (see details below)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">lock_fee_auth</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Permanently revoke fee sharing authority after setting shareholders</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">agent_buyback</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Enable Creator Mode — auto buyback using 100% of creator fees (flywheel)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Fee Shareholders Format</h4>
+                        <p>The <code>pump_fee_shareholders</code> array contains objects with:</p>
+                        <ul style="color: #ccc; margin: 10px 0 10px 20px;">
+                            <li><code>address</code> - Solana wallet address <strong>OR</strong></li>
+                            <li><code>github_username</code> - GitHub username (with or without @) - resolved to on-chain PDA <strong>OR</strong></li>
+                            <li><code>twitter_username</code> - X / Twitter handle (with or without @) - resolved to on-chain PDA</li>
+                            <li><code>share_bps</code> - Share in basis points (100 bps = 1%)</li>
+                        </ul>
+                        <p style="color: #aaa; font-size: 13px; margin: 6px 0;">You can mix all three types in one array.</p>
+                        <div style="background: rgba(237, 66, 69, 0.1); border: 1px solid rgba(237, 66, 69, 0.3); border-radius: 6px; padding: 12px; margin: 10px 0;">
+                            <strong style="color: #ed4245;">Important:</strong>
+                            <span style="color: #ccc;"> Total share_bps from all shareholders must equal exactly <strong>10000</strong> (100%). No more, no less.</span>
+                        </div>
+                        <p style="color: #888; font-size: 13px;">Example: 3 shareholders at ~33% each = 3334 + 3333 + 3333 = 10000 bps</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Example Pump.fun Request with Fee Sharing</h4>
+                        <div class="code-block">{
+  "api_key": "your_encrypted_api_key_here",
+  "type": "pump",
+  "name": "My Pump Token",
+  "ticker": "PUMP",
+  "buy_amount": 5,
+  "mayhem_mode": true,
+  "cashback_mode": false,
+  "pump_fee_shareholders": [
+    {"address": "wallet_public_key_1", "share_bps": 3334},
+    {"github_username": "myGitHubUser", "share_bps": 3333},
+    {"twitter_username": "myTwitterHandle", "share_bps": 3333}
+  ],
+  "lock_fee_auth": true
+}</div>
+                        <p style="color: #888; font-size: 13px; margin-top: 8px;">Above example: 3334 + 3333 + 3333 = 10000 bps (100%) - valid! GitHub and Twitter usernames are resolved to PDAs automatically.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="operation">
+                <div class="operation-header" onclick="toggleOperation(&#39;bags-info&#39;)">
+                    <span class="method-badge method-info">INFO</span>
+                    <span class="operation-path">
+                        <img src="./J7Tracker External Deploy API_files/bags-logo.png" width="20" height="20" style="vertical-align: middle; border-radius: 4px;">
+                    </span>
+                    <span class="operation-summary">Bags Mode Parameters</span>
+                    <span class="expand-icon" id="bags-info-icon">▼</span>
+                </div>
+                <div class="operation-content" id="bags-info-content">
+                    <div class="section">
+                        <h4>Additional Parameters for Bags</h4>
+                        <p>When using <code>type: "bags"</code>, you can include these optional parameters:</p>
+                        
+                        <table class="parameters-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Default</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="param-name param-optional">bags_fee_claimer</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-optional">-</span></td>
+                                    <td>Twitter handle of fee claimer (without @)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">bags_creator_share</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">0</span></td>
+                                    <td>Creator's fee share percentage (0-100)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name param-optional">bags_fee_claimer_share</span></td>
+                                    <td><span class="param-type">number</span></td>
+                                    <td><span class="param-optional">100</span></td>
+                                    <td>Fee claimer's share percentage (0-100)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Example Bags Request</h4>
+                        <div class="code-block">{
+  "api_key": "your_encrypted_api_key_here",
+  "type": "bags",
+  "name": "My Bags Token",
+  "ticker": "BAGS",
+  "twitter": "https://twitter.com/mybags",
+  "website": "https://mybags.com",
+  "buy_amount": 5,
+  "bags_fee_claimer": "username",
+  "bags_creator_share": 20,
+  "bags_fee_claimer_share": 80,
+  "image_data": "https://example.com/token-image.png",
+  "ref": "testuser"
+}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="operation">
+                <div class="operation-header" onclick="toggleOperation(&#39;bonk-info&#39;)">
+                    <span class="method-badge method-info">INFO</span>
+                    <span class="operation-path">
+                        <img src="./J7Tracker External Deploy API_files/bonk-logo.png" width="20" height="20" style="vertical-align: middle; border-radius: 4px;">
+                        <img src="./J7Tracker External Deploy API_files/usd1-logo.png" width="20" height="20" style="vertical-align: middle; border-radius: 4px; margin-left: 4px;">
+                    </span>
+                    <span class="operation-summary">Bonk/USD1 Mode Parameters</span>
+                    <span class="expand-icon" id="bonk-info-icon">▼</span>
+                </div>
+                <div class="operation-content" id="bonk-info-content">
+                    <div class="section">
+                        <h4>Additional Parameters for Bonk/USD1</h4>
+                        <p>When using <code>type: "bonk"</code> or <code>type: "usd1"</code>, you can include:</p>
+                        
+                        <table class="parameters-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Default</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="param-name param-optional">bonkers_mode</span></td>
+                                    <td><span class="param-type">boolean</span></td>
+                                    <td><span class="param-optional">false</span></td>
+                                    <td>Use letsbonk.fun platform configuration instead of default</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Example Bonkers Mode Request</h4>
+                        <div class="code-block">{
+  "api_key": "your_encrypted_api_key_here",
+  "type": "bonk",
+  "name": "My Bonkers Token",
+  "ticker": "BONK",
+  "buy_amount": 5,
+  "bonkers_mode": true
+}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="operation">
+                <div class="operation-header" onclick="toggleOperation(&#39;health-check&#39;)">
+                    <span class="method-badge method-get">GET</span>
+                    <span class="operation-path">/health</span>
+                    <span class="operation-summary">Health Check</span>
+                    <span class="expand-icon" id="health-check-icon">▼</span>
+                </div>
+                <div class="operation-content" id="health-check-content">
+                    <div class="section">
+                        <h4>Description</h4>
+                        <p>Check server status and deploy server connection.</p>
+                    </div>
+                    
+                    <button class="try-it-out" onclick="tryHealthCheck()">Try it out</button>
+                    
+                    <div class="section">
+                        <h4>Responses</h4>
+                        <div class="response-section">
+                            <span class="response-code">200</span>
+                            <span class="response-desc">Server Status</span>
+                            <div class="code-block" id="health-response">{
+  "status": "ok",
+  "deployServerConnected": true,
+  "timestamp": "2026-04-02T01:19:30.883Z"
+}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        
+        <div class="security-warning">
+            <h4>⚠️ Security Notes</h4>
+            <ul>
+                <li><strong>Never share your API key</strong> - It controls your wallet</li>
+                <li><strong>Use HTTPS/WSS</strong> - Always use secure connections</li>
+                <li><strong>Validate responses</strong> - Check success field before proceeding</li>
+                <li><strong>Rate limiting</strong> - Don't spam requests</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        function toggleOperation(operationId) {
+            const content = document.getElementById(operationId + '-content');
+            const icon = document.getElementById(operationId + '-icon');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                icon.classList.remove('rotated');
+            } else {
+                content.classList.add('active');
+                icon.classList.add('rotated');
+            }
+        }
+        
+        async function tryHealthCheck() {
+            try {
+                const response = await fetch('/external/health');
+                const data = await response.json();
+                document.getElementById('health-response').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('health-response').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+    </script>
+<script defer="" src="./J7Tracker External Deploy API_files/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;0f50db55dede48aa9019ff62d6be354f&quot;,&quot;server_timing&quot;:{&quot;name&quot;:{&quot;cfCacheStatus&quot;:true,&quot;cfEdge&quot;:true,&quot;cfExtPri&quot;:true,&quot;cfL4&quot;:true,&quot;cfOrigin&quot;:true,&quot;cfSpeedBrain&quot;:true},&quot;location_startswith&quot;:null}}" crossorigin="anonymous"></script>
+
+</body></html>
