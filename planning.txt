@@ -1,9 +1,0 @@
-do LLM for memecoins
-score system on new tweets
-and he deploys coins automatically if its good enough
-
-nah
-he uses api from like j7 tracker
-so u dont have to deal with scrapping twitter urself
-he follows certain accounts that are known for "good tweets" and trains his LLM on tweets that went well on the memescape
-like tweets from elon musk, trump, a1lon, etc
