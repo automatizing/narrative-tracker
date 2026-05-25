@@ -1,6 +1,21 @@
+<div align="center">
+
 # Narrative Tracker
 
-A Twitter briefing bot that watches j7tracker's tweet stream, clusters trending topics every few hours, and uses an LLM to write a build-opportunity briefing aimed at product managers and engineers.
+**A Twitter briefing bot that watches j7tracker's tweet stream, clusters trending topics every few hours, and uses an LLM to write a tiered build-opportunity briefing aimed at product managers and engineers.**
+
+[![Node](https://img.shields.io/badge/node-%3E%3D20-43853d?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Deploy](https://img.shields.io/badge/deploy-Railway-0B0D0E?logo=railway&logoColor=white)](https://railway.app/)
+[![Express](https://img.shields.io/badge/express-5.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![Socket.IO](https://img.shields.io/badge/socket.io-4.x-010101?logo=socket.io&logoColor=white)](https://socket.io/)
+[![LLM](https://img.shields.io/badge/LLM-Kimi%20K2.6-7c3aed)](https://moonshotai.com/)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)](#)
+[![Status](https://img.shields.io/badge/status-live-success)](#)
+
+</div>
+
+---
 
 ## What it does
 
@@ -98,4 +113,4 @@ The two pieces most worth tweaking live in `bot.js`:
 
 ## License
 
-Pick whatever license fits your use. Add a `LICENSE` file before sharing widely.
+[MIT](LICENSE) © 2026 automatizing
