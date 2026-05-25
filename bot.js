@@ -174,15 +174,44 @@ async function hydrateCluster(cluster) {
   const firstTs = recs[0]?.ts;
   const lastTs = recs[recs.length - 1]?.ts;
 
+  // Peak velocity: tweets in the hottest 10-minute bucket. Brand-new tweets
+  // mean likes/retweets are useless — volume bursts are the real heat signal.
+  const bucketMs = 10 * 60 * 1000;
+  const buckets = new Map();
+  for (const r of recs) {
+    const b = Math.floor(r.ts / bucketMs);
+    buckets.set(b, (buckets.get(b) || 0) + 1);
+  }
+  let peakCount = 0;
+  let peakBucket = null;
+  for (const [b, n] of buckets) {
+    if (n > peakCount) { peakCount = n; peakBucket = b; }
+  }
+  const peakPerMin = (peakCount / 10).toFixed(1);
+  const peakAt = peakBucket !== null ? peakBucket * bucketMs : null;
+
+  // Combined follower reach across distinct authors in the hydrated sample.
+  const seenAuthors = new Set();
+  let followerReach = 0;
+  for (const s of samples) {
+    if (seenAuthors.has(s.author)) continue;
+    seenAuthors.add(s.author);
+    followerReach += s.authorFollowers || 0;
+  }
+
   return {
     ...cluster,
     totalTweets: recs.length,
     samples,
+    sampleSize: samples.length,
     authorCounts,
     distinctAuthors,
     repeatAuthors,
     firstTs,
     lastTs,
+    peakPerMin,
+    peakAt,
+    followerReach,
   };
 }
 
@@ -207,6 +236,17 @@ function fmtTime(ts) {
   return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
 }
 
+function fmtReach(n) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+  return String(n);
+}
+
+function formatHeatLine(c) {
+  const peakLabel = c.peakAt ? `${fmtTime(c.peakAt)} UTC` : '—';
+  return `${c.totalTweets} tweets · ${c.peakPerMin}/min peak @ ${peakLabel} · ${c.distinctAuthors}/${c.sampleSize} sampled authors distinct · ${fmtReach(c.followerReach)} follower reach`;
+}
+
 // ---------- LLM briefing (streaming) ----------
 async function generateBriefing(hydratedClusters, windowHours, onDelta) {
   const sections = hydratedClusters.map(c => {
@@ -214,16 +254,18 @@ async function generateBriefing(hydratedClusters, windowHours, onDelta) {
     const repeats = c.repeatAuthors.length
       ? c.repeatAuthors.map(([a, n]) => `@${a} (${n}x)`).join(', ')
       : 'none';
+    const heatLine = formatHeatLine(c);
     const tweets = c.samples.length
       ? c.samples.map(t => {
-          const followers = t.authorFollowers !== null ? `, ${t.authorFollowers} followers` : '';
+          const followers = t.authorFollowers !== null ? ` (${fmtReach(t.authorFollowers)} followers)` : '';
           const media = t.hasImage ? ' [img]' : t.hasVideo ? ' [vid]' : '';
-          return `    - [${fmtTime(t.ts)} UTC] @${t.author} (${t.likes} likes${followers})${media}: "${t.text.slice(0, 320)}"`;
+          return `    - [${fmtTime(t.ts)} UTC] @${t.author}${followers}${media}: "${t.text.slice(0, 320)}"`;
         }).join('\n')
       : '    (no sample tweets available)';
     return `Topic raw label: "${c.topic}"
-  Total mentions: ${c.totalTweets} tweets | Distinct authors: ${c.distinctAuthors} | Repeat authors: ${repeats}
+  HEAT: ${heatLine}
   First seen: ${fmtAgo(c.firstTs)} | Last seen: ${fmtAgo(c.lastTs)}
+  Repeat authors: ${repeats}
   Suggested tickers: ${tickers}
   Sample tweets (chronological, UTC):
 ${tweets}`;
@@ -231,29 +273,47 @@ ${tweets}`;
 
   const prompt = `You are a sharp project-manager-grade analyst writing a BUILD-OPPORTUNITY briefing for engineers and PMs who scan trending tweets to spot what to ship next.
 
-Below are the hottest topic clusters from the last ${windowHours} hours. Each cluster comes from j7tracker's per-tweet AI label; per-cluster analytics (author counts, timeline) and a chronological sample of actual tweet text are included.
+Below are the topic clusters from the last ${windowHours} hours. Each cluster comes from j7tracker's per-tweet AI label.
+
+IMPORTANT — the websocket gives us brand-new tweets the moment they are posted, so likes / retweets / views are NOT meaningful (everything is freshly posted with no time to accumulate engagement). Heat is measured purely by:
+- Volume (total tweets in the window)
+- Velocity (peak tweets/min in any 10-minute bucket)
+- Author breadth (distinct authors in the hydrated sample — many = organic conversation, few = single-account spam)
+- Follower reach potential (combined audience of posting accounts)
 
 DATA:
 
 ${sections}
 
-YOUR JOB: extract CONCRETE product/tool opportunities from this data. Most trending topics are noise — celebrity drama, sports recaps, pure breaking news with no actionable hook, single-account hype campaigns, etc. They do NOT belong in this briefing. A topic earns a section ONLY if someone could realistically ship a tool, dashboard, agent, SaaS, content product, or other shippable thing around the trend. Skip aggressively — a short, dense briefing is better than a long, padded one.
+YOUR JOB: sort EVERY cluster in the data into exactly one of three tiers. Do not silently drop any cluster — being explicit about what's noise IS part of the value. The user wants breadth, not a 3-line briefing.
 
 Write a markdown briefing with this exact structure:
 
-1. Open with a single italics sentence naming the biggest build opportunity in this ${windowHours}h window. No heading, just the sentence. If nothing in the window is actionable, say so explicitly: "_No actionable build opportunities in this window._" and STOP — do not invent sections.
+1. Open with a single italics sentence naming the biggest build opportunity in this ${windowHours}h window. No heading, just the sentence. If nothing is buildable, say "_No actionable build opportunities in this window._" and continue with the tier sections anyway.
 
-2. One \`##\` section per buildable topic. The \`##\` is a punchy headline YOU write, not the raw label. SKIP topics with no clear product angle even if they're trending hard. MERGE related sub-topics under one heading. Order sections by buildability × urgency, biggest opportunity first.
-
-3. For each topic, EXACTLY four parts in this order:
-   - **Trend.** 1-2 sentences on what's being said and by whom. Cite with @handle. If one author dominates the cluster (3+ tweets), call it out — that's either organic conviction or single-person hype, and the reader needs to know which.
+2. \`## Tier 1 — Build now\`
+   One \`###\` subsection per buildable topic. The \`###\` is a punchy headline YOU write, not the raw label. Order by build-attractiveness × heat, biggest first. For each topic, EXACTLY these five parts in order:
+   - **Heat.** Paste the HEAT line from the data block VERBATIM.
+   - **Trend.** 1-2 sentences on what's being said and by whom. Cite @handles. If one author dominates the sample (3+ tweets), call it out — that's either conviction or single-person hype, and the reader needs to know which.
    - **Domain.** A single tag: \`tech\` / \`crypto\` / \`trading\` / \`ai\` / \`culture\` / \`politics\` / \`other\`.
-   - **Build angles.** A bulleted list of 2-4 CONCRETE product ideas. Specific beats generic — "A leaderboard scraping X" beats "a tool for X". Each bullet one short sentence. If you can only generate vague ideas, the topic probably isn't actionable — go back and skip it.
-   - **Speed call.** One sentence: \`ship this weekend\` / \`2-week build\` / \`multi-month bet\`, plus a one-clause note on who's already in the space or the gap (e.g., "no incumbent yet" / "X already owns the obvious version" / "saturated, only an angle wins").
+   - **Build angles.** A bulleted list of 2-4 CONCRETE product ideas, one short sentence each. Specific beats generic — "a leaderboard scraping X" beats "a tool for X".
+   - **Speed call.** One sentence: \`ship this weekend\` / \`2-week build\` / \`multi-month bet\`, plus one clause on competition ("no incumbent yet" / "X already owns the obvious version" / "saturated, only an angle wins").
 
-4. End with a \`## Watch\` section: 2-4 bullets of things to monitor in the next 12-24h that could open ship-worthy windows. Each bullet one sentence, specific (named event, account, expected announcement).
+3. \`## Tier 2 — Hot but no angle\`
+   Clusters with real heat (volume, velocity, or author breadth) but no clear product hook. ONE paragraph each, 3-5 sentences. Lead with the topic name in bold, paste the HEAT line inline, describe what's happening, then say what would have to change for it to become buildable. Do NOT invent forced angles to promote a topic into Tier 1 — honesty about non-buildability IS the value here.
 
-Tone: terse, opinionated, no hedging, no emoji, no marketing voice. Write like a senior PM with skin in the game — confident calls, not "could potentially perhaps."`;
+4. \`## Tier 3 — Noise dismissed\`
+   Single-account hype, automated breaking-news echo, celebrity drama, sports recaps, anything without a product surface. ONE line each: bold topic name, one-clause dismissal reason. Example:
+   - **@Cache100x "ATM" Solana token** — single account, 5 posts in 11 minutes, spam pattern.
+
+5. \`## Watch\`
+   2-4 bullets of things to monitor in the next 12-24h that could open ship-worthy windows. One sentence each, specific (named event, account, expected announcement).
+
+Rules:
+- Every cluster in the input MUST appear in exactly one tier. No silent drops.
+- Tier 1 and Tier 2 must paste the HEAT line from the data block verbatim — do not paraphrase or round the numbers.
+- If multiple raw labels clearly describe the same event (e.g. "Trump" + "Secret Service" + "White House gunman"), merge them under one entry and combine the HEAT lines in the form "N raw labels merged · X total tweets · ...".
+- Tone: terse, opinionated, no hedging, no emoji, no marketing voice. Senior PM with skin in the game — confident calls, not "could potentially perhaps."`;
 
   const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
     method: 'POST',
