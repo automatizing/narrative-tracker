@@ -20,6 +20,15 @@ const CONFIG = {
   minTweetsPerCluster: parseInt(process.env.MIN_TWEETS_PER_CLUSTER) || 3,
   maxClustersInBriefing: parseInt(process.env.MAX_CLUSTERS) || 12,
   maxHydratePerCluster: parseInt(process.env.MAX_HYDRATE) || 12,
+  // Notable authors whose tweets surface as "wildcards" regardless of cluster
+  // volume — a niche reply from a founder/CEO can seed a build opportunity
+  // even if the j7 label appears in only one tweet.
+  notableAuthors: new Set(
+    (process.env.NOTABLE_AUTHORS ||
+      'aeyakovenko,elonmusk,vitalikbuterin,sama,jack,balajis,naval,paulg,levelsio,nikitabier,garrytan,pmarca,cdixon,packym,dhh,rauchg,patrickc'
+    ).split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+  ),
+  maxWildcardHydrate: parseInt(process.env.MAX_WILDCARD_HYDRATE) || 60,
   retainHours: 48,
   port: parseInt(process.env.PORT) || 3000,
   // Storage paths — overridable so a hosted deploy can mount a persistent
@@ -223,6 +232,38 @@ function pickSpread(arr, n) {
   return out;
 }
 
+// Scan tweets that did NOT make it into the main clusters and hydrate a
+// spread sample to check author against CONFIG.notableAuthors. Any match
+// becomes a "wildcard" — surfaced individually in the briefing even though
+// its label didn't cluster.
+async function findWildcards(allTweets, mainClusters) {
+  if (CONFIG.notableAuthors.size === 0) return [];
+  const inMain = new Set();
+  for (const c of mainClusters) {
+    for (const r of c.records) inMain.add(r.tweet_id);
+  }
+  const leftover = allTweets.filter(t => !inMain.has(t.tweet_id));
+  if (leftover.length === 0) return [];
+  const sample = leftover.length <= CONFIG.maxWildcardHydrate
+    ? leftover
+    : pickSpread(leftover.slice().sort((a, b) => a.ts - b.ts), CONFIG.maxWildcardHydrate);
+  const wildcards = [];
+  for (const rec of sample) {
+    const tweet = await fetchTweet(rec.tweet_id);
+    if (!tweet) continue;
+    const handle = (tweet.author || '').toLowerCase();
+    if (CONFIG.notableAuthors.has(handle)) {
+      wildcards.push({
+        ...tweet,
+        ts: rec.ts,
+        prediction: rec.prediction,
+        ticker: rec.ticker,
+      });
+    }
+  }
+  return wildcards;
+}
+
 function fmtAgo(ts) {
   const mins = Math.round((Date.now() - ts) / 60000);
   if (mins < 60) return `${mins}m ago`;
@@ -248,7 +289,7 @@ function formatHeatLine(c) {
 }
 
 // ---------- LLM briefing (streaming) ----------
-async function generateBriefing(hydratedClusters, windowHours, onDelta) {
+async function generateBriefing(hydratedClusters, wildcards, windowHours, onDelta) {
   const sections = hydratedClusters.map(c => {
     const tickers = [...c.tickers].slice(0, 5).join(', ') || 'none';
     const repeats = c.repeatAuthors.length
@@ -271,6 +312,15 @@ async function generateBriefing(hydratedClusters, windowHours, onDelta) {
 ${tweets}`;
   }).join('\n\n---\n\n');
 
+  const wildcardsBlock = (!wildcards || wildcards.length === 0)
+    ? '(no wildcard tweets from notable authors in this window)'
+    : wildcards.map(w => {
+        const followers = w.authorFollowers !== null ? ` (${fmtReach(w.authorFollowers)} followers)` : '';
+        const media = w.hasImage ? ' [img]' : w.hasVideo ? ' [vid]' : '';
+        const tagged = w.prediction ? ` [j7 label: "${w.prediction}"]` : '';
+        return `- [${fmtTime(w.ts)} UTC] @${w.author}${followers}${media}${tagged}: "${w.text.slice(0, 400)}"`;
+      }).join('\n');
+
   const prompt = `You are a sharp project-manager-grade analyst writing a BUILD-OPPORTUNITY briefing for engineers and PMs who scan trending tweets to spot what to ship next.
 
 Below are the topic clusters from the last ${windowHours} hours. Each cluster comes from j7tracker's per-tweet AI label.
@@ -281,11 +331,15 @@ IMPORTANT — the websocket gives us brand-new tweets the moment they are posted
 - Author breadth (distinct authors in the hydrated sample — many = organic conversation, few = single-account spam)
 - Follower reach potential (combined audience of posting accounts)
 
-DATA:
+DATA — CLUSTERS:
 
 ${sections}
 
-YOUR JOB: sort EVERY cluster in the data into exactly one of three tiers. Do not silently drop any cluster — being explicit about what's noise IS part of the value. The user wants breadth, not a 3-line briefing.
+DATA — WILDCARDS (individual tweets from founder/builder/investor accounts whose label did NOT cluster):
+
+${wildcardsBlock}
+
+YOUR JOB: sort EVERY cluster into exactly one of three tiers, AND evaluate every wildcard individually. Do not silently drop any cluster or wildcard — being explicit about what's noise IS part of the value. The user wants breadth, not a 3-line briefing.
 
 Write a markdown briefing with this exact structure:
 
@@ -309,9 +363,16 @@ Write a markdown briefing with this exact structure:
 5. \`## Watch\`
    2-4 bullets of things to monitor in the next 12-24h that could open ship-worthy windows. One sentence each, specific (named event, account, expected announcement).
 
+Wildcards: each wildcard is a single tweet from a notable account. Their cluster did NOT pass the volume threshold, so there's no HEAT line — judge on tweet content + author authority alone.
+- If the wildcard sparks a real product opportunity, slot it as a Tier 1 \`###\` subsection. Use \`Wildcard · @handle (Nx followers)\` as the Heat line in place of the cluster HEAT.
+- If it's interesting context but not buildable (e.g. a takeaway from a respected voice), mention in Tier 2 with the handle.
+- If it's a throwaway / off-topic reply, list in Tier 3 as \`**Wildcard @handle** — one-clause reason\`.
+- Never silently drop a wildcard.
+
 Rules:
 - Every cluster in the input MUST appear in exactly one tier. No silent drops.
-- Tier 1 and Tier 2 must paste the HEAT line from the data block verbatim — do not paraphrase or round the numbers.
+- Every wildcard in the input MUST appear in exactly one tier. No silent drops.
+- Tier 1 and Tier 2 must paste the HEAT line from the cluster data block verbatim — do not paraphrase or round the numbers. Wildcards use the Wildcard · @handle format instead.
 - If multiple raw labels clearly describe the same event (e.g. "Trump" + "Secret Service" + "White House gunman"), merge them under one entry and combine the HEAT lines in the form "N raw labels merged · X total tweets · ...".
 - Tone: terse, opinionated, no hedging, no emoji, no marketing voice. Senior PM with skin in the game — confident calls, not "could potentially perhaps."`;
 
@@ -420,18 +481,23 @@ async function runBriefing() {
       hydrated.push(await hydrateCluster(c));
     }
 
+    broadcastBriefEvent('phase', { phase: 'wildcards' });
+    const wildcards = await findWildcards(tweets, clusters);
+    console.log(`[briefing] wildcards from notable authors: ${wildcards.length}`);
+
     const meta = {
       generatedAt: startedAt.toISOString(),
       windowHours: CONFIG.windowHours,
       tweetsSeen: tweets.length,
       topicsCovered: clusters.length,
+      wildcards: wildcards.length,
     };
     briefingState.meta = meta;
     broadcastBriefEvent('meta', meta);
 
     console.log('[briefing] calling LLM (streaming)...');
     broadcastBriefEvent('phase', { phase: 'writing' });
-    const body = await generateBriefing(hydrated, CONFIG.windowHours, (chunk) => {
+    const body = await generateBriefing(hydrated, wildcards, CONFIG.windowHours, (chunk) => {
       if (chunk.type === 'content') {
         briefingState.partialMarkdown += chunk.text;
         broadcastBriefEvent('delta', { text: chunk.text });
@@ -501,8 +567,15 @@ function startCollector() {
   });
   socket.on('connect_error', (e) => console.log(`[ws] connect_error: ${e.message}`));
 
+  let loggedPayloads = 0;
   socket.on('ai_suggestion', (data) => {
     if (!data?.tweet_id) return;
+    // One-time peek at the raw payload shape. If j7 already sends author info
+    // here, we can skip the wildcard hydration cost in a later pass.
+    if (loggedPayloads < 3) {
+      console.log('[ws] ai_suggestion payload sample:', JSON.stringify(data));
+      loggedPayloads++;
+    }
     const rec = {
       tweet_id: data.tweet_id,
       prediction: data.prediction || '',

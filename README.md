@@ -80,6 +80,8 @@ node bot.js brief   # force one briefing run and exit
 | `MIN_TWEETS_PER_CLUSTER` | 3 | Minimum tweet count for a topic to make the briefing |
 | `MAX_CLUSTERS` | 12 | Cap on topics passed to the LLM |
 | `MAX_HYDRATE` | 12 | Sample size hydrated per cluster |
+| `NOTABLE_AUTHORS` | curated default | Comma-separated lowercase handles whose tweets surface as wildcards regardless of cluster volume |
+| `MAX_WILDCARD_HYDRATE` | 60 | Cap on leftover tweets hydrated per briefing to hunt for notable-author wildcards |
 | `PORT` | 3000 | HTTP server port (Railway injects this) |
 | `DATA_DIR` | `./data` | Where `tweets.jsonl` lives |
 | `BRIEFINGS_DIR` | `./briefings` | Where briefing markdown files are saved |
